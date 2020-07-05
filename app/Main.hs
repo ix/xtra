@@ -44,6 +44,9 @@ instance Enum Flavor where
   toEnum 0xFF_BB_CD_FF = Blueberry
   toEnum _             = Banana
 
+toPixel :: Flavor -> X.Pixel
+toPixel = fromIntegral . fromEnum
+
 data Arguments = Arguments
   { fontName :: String
   , flavor   :: Flavor
@@ -70,7 +73,7 @@ main = do
   font     <- X.loadQueryFont display fontName
   content  <- lines <$> getContents
   root     <- X.rootWindow display 0
-  window   <- X.createSimpleWindow display root 0 0 250 250 0 (fromIntegral $ fromEnum flavor) (fromIntegral $ fromEnum flavor)
+  window   <- X.createSimpleWindow display root 0 0 250 250 0 (toPixel flavor) (toPixel flavor)
   X.selectInput display window X.exposureMask
   X.mapWindow display window
   runReaderT eventLoop Environment {..}
