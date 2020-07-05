@@ -89,6 +89,7 @@ eventLoop :: ReaderT Environment IO ()
 eventLoop = do
   Environment {..} <- ask
   liftIO $ do
+    X.allocaXEvent $ X.nextEvent display
     drawLines display window font content
     X.sync display False
   eventLoop
@@ -110,7 +111,6 @@ verticalize texts font origin = zipWith arrange [0..] texts
 
 drawLines :: X.Display -> X.Window -> X.FontStruct -> [String] -> IO ()
 drawLines display window font texts = do
-  X.allocaXEvent $ X.nextEvent display
   gc   <- X.createGC display window
   let textPositions = verticalize texts font $ characterHeight font
   X.clearWindow display window
