@@ -2,12 +2,14 @@
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE RecordWildCards    #-}
 {-# LANGUAGE StrictData         #-}
+{-# LANGUAGE MultiWayIf #-}
 
 module Main where
 
 import Control.Monad          (forM_)
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Reader   (ReaderT, ask, runReaderT)
+import Control.Monad.Reader   (ReaderT, ask, runReaderT, local)
+import Data.Bits              ((.|.))
 import Data.Char              (toLower)
 import Data.Int               (Int32)
 import Options.Applicative
@@ -53,11 +55,12 @@ data Arguments = Arguments
   }
 
 data Environment = Environment
-  { display :: X.Display
-  , root    :: X.Window
-  , window  :: X.Window
-  , content :: [String]
-  , font    :: X.FontStruct
+  { display      :: X.Display
+  , root         :: X.Window
+  , window       :: X.Window
+  , content      :: [String]
+  , font         :: X.FontStruct
+  , scrollOffset :: X.Position
   }
 
 data PositionedText = PositionedText
@@ -69,12 +72,13 @@ data PositionedText = PositionedText
 main :: IO ()
 main = do
   Arguments {..} <- execParser $ info (optionParser <**> helper) mempty
-  display  <- maybe (error "Couldn't open display!") X.openDisplay =<< lookupEnv "DISPLAY"
-  font     <- X.loadQueryFont display fontName
-  content  <- lines <$> getContents
-  root     <- X.rootWindow display 0
-  window   <- X.createSimpleWindow display root 0 0 250 250 0 (toPixel flavor) (toPixel flavor)
-  X.selectInput display window X.exposureMask
+  display      <- maybe (error "Couldn't open display!") X.openDisplay =<< lookupEnv "DISPLAY"
+  font         <- X.loadQueryFont display fontName
+  content      <- lines <$> getContents
+  root         <- X.rootWindow display 0
+  window       <- X.createSimpleWindow display root 0 0 250 250 0 (toPixel flavor) (toPixel flavor)
+  scrollOffset <- pure 0
+  X.selectInput display window $ X.exposureMask .|. X.buttonPressMask
   X.mapWindow display window
   runReaderT eventLoop Environment {..}
   X.freeFont display font
@@ -88,11 +92,24 @@ optionParser = do
 eventLoop :: ReaderT Environment IO ()
 eventLoop = do
   Environment {..} <- ask
+  event <- liftIO $ X.allocaXEvent $
+    \event -> X.nextEvent display event >> pure event
+
   liftIO $ do
-    X.allocaXEvent $ X.nextEvent display
-    drawLines display window font content
+    drawLines display window font scrollOffset content
     X.sync display False
-  eventLoop
+
+  maybeButton <- liftIO $ X.get_EventType event >>= \type_ -> if 
+    | type_ == X.buttonPress -> Just <$> eventButton <$> X.get_ButtonEvent event
+    | otherwise              -> pure Nothing
+
+  case maybeButton of
+    Just 4 -> local (\e -> e { scrollOffset = scrollOffset - 10 }) eventLoop
+    Just 5 -> local (\e -> e { scrollOffset = scrollOffset + 10 }) eventLoop
+    _      -> eventLoop
+
+eventButton :: X.XButtonEvent -> X.Button
+eventButton (_, _, _, _, _, _, _, _, button, _) = button
 
 -- return the ascent and descent for a given font
 fontMetrics :: X.FontStruct -> (Int32, Int32)
@@ -109,10 +126,10 @@ verticalize texts font origin = zipWith arrange [0..] texts
   where
     arrange index text = PositionedText text (origin + index * characterHeight font) $ X.textWidth font text
 
-drawLines :: X.Display -> X.Window -> X.FontStruct -> [String] -> IO ()
-drawLines display window font texts = do
+drawLines :: X.Display -> X.Window -> X.FontStruct -> X.Position -> [String] -> IO ()
+drawLines display window font origin texts = do
   gc   <- X.createGC display window
-  let textPositions = verticalize texts font $ characterHeight font
+  let textPositions = verticalize texts font $ origin + characterHeight font
   X.clearWindow display window
   X.setForeground display gc textColor
   X.setFont display gc $ X.fontFromFontStruct font
