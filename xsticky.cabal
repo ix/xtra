@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6fc48e59772ca2a3ef79791dd01b3c7253242cabe04696405461be15f4181e18
+-- hash: ad5f905d655cc2c8749d4b3c1b5d52f11878e5343cbd69e49e8e656d41fc7da1
 
 name:           xsticky
 version:        0.1.0.0
@@ -17,9 +17,6 @@ copyright:      2020 ix
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
-extra-source-files:
-    README.md
-    ChangeLog.md
 
 source-repository head
   type: git

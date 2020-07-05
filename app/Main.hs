@@ -8,18 +8,46 @@ module Main where
 import Control.Monad          (forM_)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader   (ReaderT, ask, runReaderT)
+import Data.Char              (toLower)
 import Data.Int               (Int32)
 import Options.Applicative
-    (Parser, execParser, helper, info, long, short, strOption, value, (<**>))
+    (Parser, execParser, helper, info, long, maybeReader, option, short,
+    strOption, value, (<**>))
 import System.Environment     (lookupEnv)
 
 import qualified Graphics.X11 as X
 
-backgroundColor :: X.Pixel
-backgroundColor = 0xFF_FF_ED_BB
-
 textColor :: X.Pixel
 textColor = 0xFF_11_2B_3A
+
+data Flavor = Banana
+  | Cherry
+  | Apple
+  | Blueberry
+
+readFlavor :: String -> Flavor
+readFlavor "banana"    = Banana
+readFlavor "cherry"    = Cherry
+readFlavor "apple"     = Apple
+readFlavor "blueberry" = Blueberry
+readFlavor _           = Banana
+
+instance Enum Flavor where
+  fromEnum Banana    = 0xFF_FF_ED_BB
+  fromEnum Cherry    = 0xFF_FF_CB_BB
+  fromEnum Apple     = 0xFF_EF_FF_BB
+  fromEnum Blueberry = 0xFF_BB_CD_FF
+
+  toEnum 0xFF_FF_ED_BB = Banana
+  toEnum 0xFF_FF_CB_BB = Cherry
+  toEnum 0xFF_EF_FF_BB = Apple
+  toEnum 0xFF_BB_CD_FF = Blueberry
+  toEnum _             = Banana
+
+data Arguments = Arguments
+  { fontName :: String
+  , flavor   :: Flavor
+  }
 
 data Environment = Environment
   { display :: X.Display
@@ -37,18 +65,22 @@ data PositionedText = PositionedText
 
 main :: IO ()
 main = do
+  Arguments {..} <- execParser $ info (optionParser <**> helper) mempty
   display  <- maybe (error "Couldn't open display!") X.openDisplay =<< lookupEnv "DISPLAY"
-  font     <- X.loadQueryFont display =<< execParser (info (optionParser <**> helper) mempty)
+  font     <- X.loadQueryFont display fontName
   content  <- lines <$> getContents
   root     <- X.rootWindow display 0
-  window   <- X.createSimpleWindow display root 0 0 250 250 0 backgroundColor backgroundColor
+  window   <- X.createSimpleWindow display root 0 0 250 250 0 (fromIntegral $ fromEnum flavor) (fromIntegral $ fromEnum flavor)
   X.selectInput display window X.exposureMask
   X.mapWindow display window
   runReaderT eventLoop Environment {..}
   X.freeFont display font
 
-optionParser :: Parser String
-optionParser = strOption (long "font" <> short 'f' <> value "fixed")
+optionParser :: Parser Arguments
+optionParser = do
+  fontName <- strOption (long "font" <> short 'f' <> value "fixed")
+  flavor   <- option (maybeReader (pure . readFlavor . map toLower)) (long "flavor" <> short 'c' <> value Banana)
+  pure Arguments {..}
 
 eventLoop :: ReaderT Environment IO ()
 eventLoop = do
@@ -79,7 +111,6 @@ drawLines display window font texts = do
   gc   <- X.createGC display window
   let textPositions = verticalize texts font $ characterHeight font
   X.clearWindow display window
-  X.setBackground display gc backgroundColor
   X.setForeground display gc textColor
   X.setFont display gc $ X.fontFromFontStruct font
   forM_ textPositions $ \PositionedText {..} ->

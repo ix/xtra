@@ -6,10 +6,6 @@ author:              "ix"
 maintainer:          "rose@empty.town"
 copyright:           "2020 ix"
 
-extra-source-files:
-- README.md
-- ChangeLog.md
-
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
 # category:            Web
