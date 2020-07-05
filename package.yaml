@@ -1,0 +1,37 @@
+name:                xsticky
+version:             0.1.0.0
+github:              "ix/xsticky"
+license:             BSD3
+author:              "ix"
+maintainer:          "rose@empty.town"
+copyright:           "2020 ix"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/xsticky#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- mtl >= 2.2.2 && < 2.3
+- X11 >= 1.9.1 && < 1.10
+- optparse-applicative >= 0.15.1 && < 0.16
+
+executables:
+  xsticky:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -O2
+    - -Wall
