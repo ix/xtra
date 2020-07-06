@@ -20,39 +20,16 @@ import System.Environment     (lookupEnv)
 
 import qualified Graphics.X11 as X
 
-textColor :: X.Pixel
-textColor = 0xFF_11_2B_3A
+defaultFG :: X.Pixel
+defaultFG = 0xFF_11_2B_3A
 
-data Flavor = Banana
-  | Cherry
-  | Apple
-  | Blueberry
-
-readFlavor :: String -> Flavor
-readFlavor "banana"    = Banana
-readFlavor "cherry"    = Cherry
-readFlavor "apple"     = Apple
-readFlavor "blueberry" = Blueberry
-readFlavor _           = Banana
-
-instance Enum Flavor where
-  fromEnum Banana    = 0xFF_FF_ED_BB
-  fromEnum Cherry    = 0xFF_FF_CB_BB
-  fromEnum Apple     = 0xFF_EF_FF_BB
-  fromEnum Blueberry = 0xFF_BB_CD_FF
-
-  toEnum 0xFF_FF_ED_BB = Banana
-  toEnum 0xFF_FF_CB_BB = Cherry
-  toEnum 0xFF_EF_FF_BB = Apple
-  toEnum 0xFF_BB_CD_FF = Blueberry
-  toEnum _             = Banana
-
-toPixel :: Flavor -> X.Pixel
-toPixel = fromIntegral . fromEnum
+defaultBG :: X.Pixel
+defaultBG = 0xFF_FF_ED_BB
 
 data Arguments = Arguments
   { fontName :: String
-  , flavor   :: Flavor
+  , foreground :: X.Pixel
+  , background :: X.Pixel
   }
 
 data Environment = Environment
@@ -62,6 +39,7 @@ data Environment = Environment
   , content      :: [String]
   , font         :: X.FontStruct
   , scrollOffset :: (X.Position, X.Position)
+  , theme        :: (X.Pixel, X.Pixel)
   }
 
 data PositionedText = PositionedText
@@ -77,8 +55,9 @@ main = do
   font         <- X.loadQueryFont display fontName
   content      <- lines <$> getContents
   root         <- X.rootWindow display 0
-  window       <- X.createSimpleWindow display root 0 0 250 250 0 (toPixel flavor) (toPixel flavor)
+  window       <- X.createSimpleWindow display root 0 0 250 250 0 background background
   scrollOffset <- pure (0, 0)
+  theme        <- pure (foreground, background)
   X.selectInput display window $ X.exposureMask .|. X.buttonPressMask
   X.mapWindow display window
   runReaderT eventLoop Environment {..}
@@ -86,8 +65,9 @@ main = do
 
 optionParser :: Parser Arguments
 optionParser = do
-  fontName <- strOption (long "font" <> short 'f' <> value "fixed")
-  flavor   <- option (maybeReader (pure . readFlavor . map toLower)) (long "flavor" <> short 'c' <> value Banana)
+  fontName   <- strOption (long "font" <> short 'F' <> value "fixed")
+  foreground <- option (maybeReader $ const Nothing) (long "foreground" <> short 'f' <> value defaultFG)
+  background <- option (maybeReader $ const Nothing) (long "background" <> short 'b' <> value defaultBG)
   pure Arguments {..}
 
 eventLoop :: ReaderT Environment IO ()
@@ -97,7 +77,7 @@ eventLoop = do
     \event -> X.nextEvent display event >> pure event
 
   liftIO $ do
-    drawLines display window font scrollOffset content
+    drawLines display window (fst theme) font scrollOffset content
     X.sync display False
 
   maybeButton <- liftIO $ X.get_EventType event >>= \type_ -> if 
@@ -129,12 +109,12 @@ verticalize texts font origin = zipWith arrange [0..] texts
   where
     arrange index text = PositionedText text (origin + index * characterHeight font) $ X.textWidth font text
 
-drawLines :: X.Display -> X.Window -> X.FontStruct -> (X.Position, X.Position) -> [String] -> IO ()
-drawLines display window font origins texts = do
+drawLines :: X.Display -> X.Window -> X.Pixel -> X.FontStruct -> (X.Position, X.Position) -> [String] -> IO ()
+drawLines display window fgColor font origins texts = do
   gc   <- X.createGC display window
   let textPositions = verticalize texts font $ (snd origins) + characterHeight font
   X.clearWindow display window
-  X.setForeground display gc textColor
+  X.setForeground display gc fgColor
   X.setFont display gc $ X.fontFromFontStruct font
   forM_ textPositions $ \PositionedText {..} ->
     X.drawString display window gc (fst origins) ptY ptText
