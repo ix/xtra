@@ -1,21 +1,22 @@
 {-# LANGUAGE ApplicativeDo      #-}
+{-# LANGUAGE MultiWayIf         #-}
 {-# LANGUAGE NumericUnderscores #-}
 {-# LANGUAGE RecordWildCards    #-}
 {-# LANGUAGE StrictData         #-}
-{-# LANGUAGE MultiWayIf #-}
 
 module Main where
 
-import Data.Bifunctor (first, second)
 import Control.Monad          (forM_)
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Reader   (ReaderT, ask, runReaderT, local)
+import Control.Monad.Reader   (ReaderT, ask, local, runReaderT)
+import Data.Bifunctor         (first, second)
 import Data.Bits              ((.|.))
-import Data.Char              (toLower)
 import Data.Int               (Int32)
+import Numeric                (readHex)
 import Options.Applicative
     (Parser, execParser, helper, info, long, maybeReader, option, short,
     strOption, value, (<**>))
+import Safe                   (headMay)
 import System.Environment     (lookupEnv)
 
 import qualified Graphics.X11 as X
@@ -27,7 +28,7 @@ defaultBG :: X.Pixel
 defaultBG = 0xFF_FF_ED_BB
 
 data Arguments = Arguments
-  { fontName :: String
+  { fontName   :: String
   , foreground :: X.Pixel
   , background :: X.Pixel
   }
@@ -63,11 +64,16 @@ main = do
   runReaderT eventLoop Environment {..}
   X.freeFont display font
 
+readPixel :: String -> Maybe X.Pixel
+readPixel ('#':xs) = readPixel  xs
+readPixel xs       = readPixel' xs
+  where readPixel' = fmap (.|. 0xFF_00_00_00) . fmap fst . headMay . readHex
+
 optionParser :: Parser Arguments
 optionParser = do
   fontName   <- strOption (long "font" <> short 'F' <> value "fixed")
-  foreground <- option (maybeReader $ const Nothing) (long "foreground" <> short 'f' <> value defaultFG)
-  background <- option (maybeReader $ const Nothing) (long "background" <> short 'b' <> value defaultBG)
+  foreground <- option (maybeReader readPixel) (long "foreground" <> short 'f' <> value defaultFG)
+  background <- option (maybeReader readPixel) (long "background" <> short 'b' <> value defaultBG)
   pure Arguments {..}
 
 eventLoop :: ReaderT Environment IO ()
@@ -80,7 +86,7 @@ eventLoop = do
     drawLines display window (fst theme) font scrollOffset content
     X.sync display False
 
-  maybeButton <- liftIO $ X.get_EventType event >>= \type_ -> if 
+  maybeButton <- liftIO $ X.get_EventType event >>= \type_ -> if
     | type_ == X.buttonPress -> Just <$> eventButton <$> X.get_ButtonEvent event
     | otherwise              -> pure Nothing
 
@@ -112,7 +118,7 @@ verticalize texts font origin = zipWith arrange [0..] texts
 drawLines :: X.Display -> X.Window -> X.Pixel -> X.FontStruct -> (X.Position, X.Position) -> [String] -> IO ()
 drawLines display window fgColor font origins texts = do
   gc   <- X.createGC display window
-  let textPositions = verticalize texts font $ (snd origins) + characterHeight font
+  let textPositions = verticalize texts font $ snd origins + characterHeight font
   X.clearWindow display window
   X.setForeground display gc fgColor
   X.setFont display gc $ X.fontFromFontStruct font

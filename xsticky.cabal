@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ad5f905d655cc2c8749d4b3c1b5d52f11878e5343cbd69e49e8e656d41fc7da1
+-- hash: caa7c4a4140f14ae72872c8d59c93f11fc207e73b75139733529684e62ea6b5f
 
 name:           xsticky
-version:        0.1.0.0
+version:        0.1.1.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/xsticky#readme>
 homepage:       https://github.com/ix/xsticky#readme
 bug-reports:    https://github.com/ix/xsticky/issues
@@ -34,4 +34,5 @@ executable xsticky
     , base >=4.7 && <5
     , mtl >=2.2.2 && <2.3
     , optparse-applicative >=0.15.1 && <0.16
+    , safe >=0.3.18 && <0.4
   default-language: Haskell2010

@@ -1,5 +1,5 @@
 name:                xsticky
-version:             0.1.0.0
+version:             0.1.1.0
 github:              "ix/xsticky"
 license:             BSD3
 author:              "ix"
@@ -20,6 +20,7 @@ dependencies:
 - mtl >= 2.2.2 && < 2.3
 - X11 >= 1.9.1 && < 1.10
 - optparse-applicative >= 0.15.1 && < 0.16
+- safe >= 0.3.18 && < 0.4
 
 executables:
   xsticky:
