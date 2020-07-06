@@ -6,6 +6,7 @@
 
 module Main where
 
+import Data.Bifunctor (first, second)
 import Control.Monad          (forM_)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Reader   (ReaderT, ask, runReaderT, local)
@@ -60,7 +61,7 @@ data Environment = Environment
   , window       :: X.Window
   , content      :: [String]
   , font         :: X.FontStruct
-  , scrollOffset :: X.Position
+  , scrollOffset :: (X.Position, X.Position)
   }
 
 data PositionedText = PositionedText
@@ -77,7 +78,7 @@ main = do
   content      <- lines <$> getContents
   root         <- X.rootWindow display 0
   window       <- X.createSimpleWindow display root 0 0 250 250 0 (toPixel flavor) (toPixel flavor)
-  scrollOffset <- pure 0
+  scrollOffset <- pure (0, 0)
   X.selectInput display window $ X.exposureMask .|. X.buttonPressMask
   X.mapWindow display window
   runReaderT eventLoop Environment {..}
@@ -104,8 +105,10 @@ eventLoop = do
     | otherwise              -> pure Nothing
 
   case maybeButton of
-    Just 4 -> local (\e -> e { scrollOffset = scrollOffset + 10 }) eventLoop
-    Just 5 -> local (\e -> e { scrollOffset = scrollOffset - 10 }) eventLoop
+    Just 4 -> local (\e -> e { scrollOffset = second (+ 10) scrollOffset }) eventLoop
+    Just 5 -> local (\e -> e { scrollOffset = second (subtract 10) scrollOffset }) eventLoop
+    Just 6 -> local (\e -> e { scrollOffset = first (+ 10) scrollOffset }) eventLoop
+    Just 7 -> local (\e -> e { scrollOffset = first (subtract 10) scrollOffset }) eventLoop
     _      -> eventLoop
 
 eventButton :: X.XButtonEvent -> X.Button
@@ -126,13 +129,13 @@ verticalize texts font origin = zipWith arrange [0..] texts
   where
     arrange index text = PositionedText text (origin + index * characterHeight font) $ X.textWidth font text
 
-drawLines :: X.Display -> X.Window -> X.FontStruct -> X.Position -> [String] -> IO ()
-drawLines display window font origin texts = do
+drawLines :: X.Display -> X.Window -> X.FontStruct -> (X.Position, X.Position) -> [String] -> IO ()
+drawLines display window font origins texts = do
   gc   <- X.createGC display window
-  let textPositions = verticalize texts font $ origin + characterHeight font
+  let textPositions = verticalize texts font $ (snd origins) + characterHeight font
   X.clearWindow display window
   X.setForeground display gc textColor
   X.setFont display gc $ X.fontFromFontStruct font
   forM_ textPositions $ \PositionedText {..} ->
-    X.drawString display window gc 5 ptY ptText
+    X.drawString display window gc (fst origins) ptY ptText
   X.freeGC display gc
