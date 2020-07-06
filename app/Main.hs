@@ -104,8 +104,8 @@ eventLoop = do
     | otherwise              -> pure Nothing
 
   case maybeButton of
-    Just 4 -> local (\e -> e { scrollOffset = scrollOffset - 10 }) eventLoop
-    Just 5 -> local (\e -> e { scrollOffset = scrollOffset + 10 }) eventLoop
+    Just 4 -> local (\e -> e { scrollOffset = scrollOffset + 10 }) eventLoop
+    Just 5 -> local (\e -> e { scrollOffset = scrollOffset - 10 }) eventLoop
     _      -> eventLoop
 
 eventButton :: X.XButtonEvent -> X.Button
