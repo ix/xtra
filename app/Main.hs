@@ -14,7 +14,7 @@ import Data.Bits              ((.|.))
 import Data.Int               (Int32)
 import Numeric                (readHex)
 import Options.Applicative
-    (Parser, execParser, helper, info, long, maybeReader, option, short,
+    (Parser, execParser, help, helper, info, long, maybeReader, option, short,
     strOption, value, (<**>))
 import Safe                   (headMay)
 import System.Environment     (lookupEnv)
@@ -71,9 +71,9 @@ readPixel xs       = readPixel' xs
 
 optionParser :: Parser Arguments
 optionParser = do
-  fontName   <- strOption (long "font" <> short 'F' <> value "fixed")
-  foreground <- option (maybeReader readPixel) (long "foreground" <> short 'f' <> value defaultFG)
-  background <- option (maybeReader readPixel) (long "background" <> short 'b' <> value defaultBG)
+  fontName   <- strOption (long "font" <> short 'F' <> help "font name, as an x11 fontstring" <> value "fixed")
+  foreground <- option (maybeReader readPixel) (long "foreground" <> short 'f' <> help "foreground color, hex" <> value defaultFG)
+  background <- option (maybeReader readPixel) (long "background" <> short 'b' <> help "background color, hex" <> value defaultBG)
   pure Arguments {..}
 
 eventLoop :: ReaderT Environment IO ()
