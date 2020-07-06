@@ -1,0 +1,11 @@
+* xsticky
+
+xsticky is an immutable (not editable) pager (like ~less~ and ~more~)
+for X11, which is so-called because it's great to use for sticky
+notes.
+
+It is written in Haskell and adheres to the KISS philosophy by trying
+to avoid doing more than it needs to, as such, if you want multiple
+notes, you should open multiple instances of the program.
+
+[[./extra/screenshot.png]]
