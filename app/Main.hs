@@ -48,7 +48,6 @@ data Environment = Environment
 data PositionedText = PositionedText
   { ptText  :: String
   , ptY     :: X.Position
-  , ptWidth :: Int32
   }
 
 main :: IO ()
@@ -127,7 +126,7 @@ characterHeight = uncurry (+) . fontMetrics
 verticalize :: [String] -> X.FontStruct -> [PositionedText]
 verticalize texts font = zipWith arrange [1..] texts
   where
-    arrange index text = PositionedText text (index * characterHeight font) $ X.textWidth font text
+    arrange index text = PositionedText text (index * characterHeight font)
 
 withPixmap :: (X.Pixmap -> ReaderT Environment IO a) -> ReaderT Environment IO a
 withPixmap actionM = do
@@ -150,4 +149,4 @@ renderContent target = do
   liftIO $ do
     let textPositions = verticalize content font
     forM_ textPositions $ \PositionedText {..} ->
-      X.drawString display target gc (fst scrollOffset) ptY ptText
+      X.drawString display target gc 0 ptY ptText
