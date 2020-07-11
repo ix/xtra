@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 786d76e55ac3c6c6e04213fb15a7a51d49357f2645291af2f29b0b96643bdbc6
+-- hash: d8a6c379c2921c5327ef1a2f1f012084e437ce36f9076fd0818c5b915e2a5cf8
 
 name:           xtra
-version:        0.1.2.0
+version:        0.1.2.1
 description:    Please see the README on GitHub at <https://github.com/ix/xtra#readme>
 homepage:       https://github.com/ix/xtra#readme
 bug-reports:    https://github.com/ix/xtra/issues
