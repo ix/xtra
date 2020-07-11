@@ -1,11 +1,12 @@
-* xsticky
+* xtra
 
-xsticky is an immutable (not editable) pager (like ~less~ and ~more~)
-for X11, which is so-called because it's great to use for sticky
-notes.
+xtra is an immutable (not editable) pager (like ~less~ and ~more~)
+for X11. I like to use it for sticky notes.
 
 It is written in Haskell and adheres to the KISS philosophy by trying
 to avoid doing more than it needs to, as such, if you want multiple
-notes, you should open multiple instances of the program.
+files, you should open multiple instances of the program.
+
+You can scroll the buffer contents in two dimensions.
 
 [[./extra/screenshot.png]]

@@ -4,13 +4,13 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3de4a413df4f2f403b6479a56ae6bda6009eedd24d42599d31490b45550f0fda
+-- hash: 786d76e55ac3c6c6e04213fb15a7a51d49357f2645291af2f29b0b96643bdbc6
 
-name:           xsticky
-version:        0.1.1.1
-description:    Please see the README on GitHub at <https://github.com/githubuser/xsticky#readme>
-homepage:       https://github.com/ix/xsticky#readme
-bug-reports:    https://github.com/ix/xsticky/issues
+name:           xtra
+version:        0.1.2.0
+description:    Please see the README on GitHub at <https://github.com/ix/xtra#readme>
+homepage:       https://github.com/ix/xtra#readme
+bug-reports:    https://github.com/ix/xtra/issues
 author:         ix
 maintainer:     rose@empty.town
 copyright:      2020 ix
@@ -20,12 +20,12 @@ build-type:     Simple
 
 source-repository head
   type: git
-  location: https://github.com/ix/xsticky
+  location: https://github.com/ix/xtra
 
-executable xsticky
+executable xtra
   main-is: Main.hs
   other-modules:
-      Paths_xsticky
+      Paths_xtra
   hs-source-dirs:
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -O2 -Wall

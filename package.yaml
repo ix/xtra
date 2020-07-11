@@ -1,6 +1,6 @@
-name:                xsticky
+name:                xtra
 version:             0.1.2.0
-github:              "ix/xsticky"
+github:              "ix/xtra"
 license:             BSD3
 author:              "ix"
 maintainer:          "rose@empty.town"
@@ -13,7 +13,7 @@ copyright:           "2020 ix"
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/xsticky#readme>
+description:         Please see the README on GitHub at <https://github.com/ix/xtra#readme>
 
 dependencies:
 - base >= 4.7 && < 5
@@ -23,7 +23,7 @@ dependencies:
 - safe >= 0.3.18 && < 0.4
 
 executables:
-  xsticky:
+  xtra:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
