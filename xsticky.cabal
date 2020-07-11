@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: caa7c4a4140f14ae72872c8d59c93f11fc207e73b75139733529684e62ea6b5f
+-- hash: 3de4a413df4f2f403b6479a56ae6bda6009eedd24d42599d31490b45550f0fda
 
 name:           xsticky
-version:        0.1.1.0
+version:        0.1.1.1
 description:    Please see the README on GitHub at <https://github.com/githubuser/xsticky#readme>
 homepage:       https://github.com/ix/xsticky#readme
 bug-reports:    https://github.com/ix/xsticky/issues
