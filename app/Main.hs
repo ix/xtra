@@ -107,8 +107,8 @@ eventLoop source = do
   case maybeButton of
     Just 4 -> local (\e -> e { scrollOffset = second (subtract 10) scrollOffset }) $ eventLoop source
     Just 5 -> local (\e -> e { scrollOffset = second (+ 10) scrollOffset }) $ eventLoop source
-    Just 6 -> local (\e -> e { scrollOffset = first (+ 10) scrollOffset }) $ eventLoop source
-    Just 7 -> local (\e -> e { scrollOffset = first (subtract 10) scrollOffset }) $ eventLoop source
+    Just 6 -> local (\e -> e { scrollOffset = first (subtract 10) scrollOffset }) $ eventLoop source
+    Just 7 -> local (\e -> e { scrollOffset = first (+ 10) scrollOffset }) $ eventLoop source
     _      -> eventLoop source
 
 eventButton :: X.XButtonEvent -> X.Button
